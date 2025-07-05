@@ -82,6 +82,10 @@ The API will be available at `http://localhost:3000`
 
 > **Try the live production server**: You can test the API endpoints directly at [https://ts-express-jobs-api.onrender.com/api](https://ts-express-jobs-api.onrender.com/api)
 
+## Try the APIs in Action
+
+You can try the APIs in action by cloning this [react app](https://github.com/AdhamElRouby/react-jobs-app).
+
 ## API Documentation
 You can view the API documentation [here](https://ts-express-jobs-api.onrender.com/api-docs/).
 
