@@ -1,0 +1,580 @@
+openapi: 3.0.3
+info:
+  title: Jobs API
+  description: A comprehensive REST API for managing job applications with user authentication
+  version: 1.0.0
+  contact:
+    name: Adham El-Rouby
+    url: https://github.com/AdhamElRouby
+    email: adhamelrouby@aucegypt.edu
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  # - url: https://api.t3jobs.com/api
+    # description: Production server
+
+tags:
+  - name: Auth
+    description: Authentication and user management endpoints
+  - name: Jobs
+    description: Job application management endpoints
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: Create a new user account with name, email, and password
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              name: John Doe
+              email: john.doe@example.com
+              password: password123
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                user:
+                  name: John Doe
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      description: Authenticate user with email and password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: john.doe@example.com
+              password: password123
+      responses:
+        '200':
+          description: User successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                user:
+                  name: John Doe
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /jobs:
+    get:
+      tags:
+        - Jobs
+      summary: Get all jobs
+      description: Retrieve all jobs created by the authenticated user
+      operationId: getAllJobs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Jobs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobsResponse'
+              example:
+                jobs:
+                  - _id: 507f1f77bcf86cd799439011
+                    company: Google
+                    position: Software Engineer
+                    status: pending
+                    createdBy: 507f191e810c19729de860ea
+                    createdAt: 2025-07-02T10:30:00.000Z
+                    updatedAt: 2025-07-02T10:30:00.000Z
+                  - _id: 507f1f77bcf86cd799439012
+                    company: Microsoft
+                    position: Frontend Developer
+                    status: interview
+                    createdBy: 507f191e810c19729de860ea
+                    createdAt: 2025-07-01T14:20:00.000Z
+                    updatedAt: 2025-07-01T14:20:00.000Z
+                count: 2
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Jobs
+      summary: Create a new job
+      description: Create a new job application
+      operationId: createJob
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+            example:
+              company: Apple
+              position: iOS Developer
+      responses:
+        '201':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+              example:
+                job:
+                  _id: 507f1f77bcf86cd799439013
+                  company: Apple
+                  position: iOS Developer
+                  status: pending
+                  createdBy: 507f191e810c19729de860ea
+                  createdAt: 2025-07-02T15:45:00.000Z
+                  updatedAt: 2025-07-02T15:45:00.000Z
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /jobs/{id}:
+    get:
+      tags:
+        - Jobs
+      summary: Get job by ID
+      description: Retrieve a specific job by its ID
+      operationId: getJobById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Job retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+              example:
+                job:
+                  _id: 507f1f77bcf86cd799439011
+                  company: Google
+                  position: Software Engineer
+                  status: pending
+                  createdBy: 507f191e810c19729de860ea
+                  createdAt: 2025-07-02T10:30:00.000Z
+                  updatedAt: 2025-07-02T10:30:00.000Z
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags:
+        - Jobs
+      summary: Update job
+      description: Update an existing job
+      operationId: updateJob
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJobRequest'
+            example:
+              company: Google Inc.
+              position: Senior Software Engineer
+              status: interview
+      responses:
+        '200':
+          description: Job updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+              example:
+                job:
+                  _id: 507f1f77bcf86cd799439011
+                  company: Google Inc.
+                  position: Senior Software Engineer
+                  status: interview
+                  createdBy: 507f191e810c19729de860ea
+                  createdAt: 2025-07-02T10:30:00.000Z
+                  updatedAt: 2025-07-02T16:45:00.000Z
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Jobs
+      summary: Delete job
+      description: Delete an existing job
+      operationId: deleteJob
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '204':
+          description: Job deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for API authentication
+
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's full name
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: User's email address (unique)
+          example: john.doe@example.com
+      required:
+        - name
+        - email
+
+    Job:
+      type: object
+      properties:
+        _id:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: Unique identifier for the job
+          example: 507f1f77bcf86cd799439011
+        company:
+          type: string
+          maxLength: 100
+          description: Company name
+          example: Google
+        position:
+          type: string
+          maxLength: 100
+          description: Job position
+          example: Software Engineer
+        status:
+          type: string
+          enum: [pending, interview, declined]
+          default: pending
+          description: Current status of the job application
+          example: pending
+        createdBy:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: ID of the user who created this job
+          example: 507f191e810c19729de860ea
+        createdAt:
+          type: string
+          format: date-time
+          description: Job creation timestamp
+          example: 2025-07-02T10:30:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: Job last update timestamp
+          example: 2025-07-02T10:30:00.000Z
+      required:
+        - _id
+        - company
+        - position
+        - status
+        - createdBy
+        - createdAt
+        - updatedAt
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: User's full name
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 6
+          description: User's password
+          example: password123
+      required:
+        - name
+        - email
+        - password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 6
+          description: User's password
+          example: password123
+      required:
+        - email
+        - password
+
+    CreateJobRequest:
+      type: object
+      properties:
+        company:
+          type: string
+          maxLength: 100
+          description: Company name
+          example: Apple
+        position:
+          type: string
+          maxLength: 100
+          description: Job position
+          example: iOS Developer
+      required:
+        - company
+        - position
+
+    UpdateJobRequest:
+      type: object
+      properties:
+        company:
+          type: string
+          maxLength: 100
+          description: Company name
+          example: Google Inc.
+        position:
+          type: string
+          maxLength: 100
+          description: Job position
+          example: Senior Software Engineer
+        status:
+          type: string
+          enum: [pending, interview, declined]
+          description: Current status of the job application
+          example: interview
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT authentication token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      required:
+        - user
+        - token
+
+    JobResponse:
+      type: object
+      properties:
+        job:
+          $ref: '#/components/schemas/Job'
+      required:
+        - job
+
+    JobsResponse:
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+          description: Array of jobs
+        count:
+          type: integer
+          minimum: 0
+          description: Total number of jobs
+          example: 2
+      required:
+        - jobs
+        - count
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: Something went wrong
+        statusCode:
+          type: integer
+          description: HTTP status code
+          example: 400
+      required:
+        - message
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Validation error message
+          example: Validation failed
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field name that failed validation
+                example: email
+              message:
+                type: string
+                description: Validation error message for the field
+                example: Please provide a valid email
+          description: Array of validation errors
+      required:
+        - message
+        - errors
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Please provide email and password
+            statusCode: 400
+
+    Unauthorized:
+      description: Unauthorized - Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Authentication invalid
+            statusCode: 401
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: No job with 507f1f77bcf86cd799439011
+            statusCode: 404
+
+    ValidationError:
+      description: Validation error - Invalid input format
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          example:
+            message: Validation failed
+            errors:
+              - field: email
+                message: Please provide a valid email
+              - field: password
+                message: Password must be at least 6 characters long
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Internal Server Error
+            statusCode: 500
+
+security:
+  - bearerAuth: []
