@@ -2,6 +2,13 @@
 
 A modern, secure RESTful API built with TypeScript and Express.js for comprehensive job management. This robust backend solution provides complete CRUD operations for job positions and secure user authentication. Designed for job posting platforms, recruitment systems, and career management applications with scalability and type safety at its core.
 
+<div align="center">
+
+<img src="./assets/demo.gif" alt="App Demo">
+
+</div>
+
+
 ## Tech Stack
 
 - <img src="https://img.shields.io/badge/-TypeScript-3178C6?logo=TypeScript&logoColor=white&style=flat" alt="TypeScript">
